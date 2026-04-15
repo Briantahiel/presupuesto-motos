@@ -1,0 +1,369 @@
+{/*"use client";
+import { useState } from "react";
+
+type Presupuesto = {
+  porcentaje: string;
+  formulario200k: number;
+  totalFormularios: number;
+  runa: number;
+};
+
+export default function Home() {
+  const [valor, setValor] = useState("");
+  const [data, setData] = useState<Presupuesto | null>(null);
+
+  const format = (num: number) => num.toLocaleString("es-AR");
+  const [copiado, setCopiado] = useState(false);
+  const crearPresupuesto = (valorFC: number): Presupuesto => {
+    const porcentaje = Math.abs(((0.03 * valorFC) / 200000) * 100 - 100);
+
+    const formulario200k = (porcentaje / 100) * 200000;
+    const formulariosFijos = 18800;
+    const totalFormularios = formulario200k + formulariosFijos;
+    const runa = valorFC * 0.008;
+
+    return {
+      porcentaje: porcentaje.toFixed(2),
+      formulario200k: Math.round(formulario200k),
+      totalFormularios: Math.round(totalFormularios),
+      runa: Math.round(runa),
+    };
+  };
+
+  const generarTexto = (valorFC: number, data: Presupuesto) => {
+    return `📄 Presupuesto de formularios
+
+💰 Valor de la operación: $${format(valorFC)}
+
+📊 Porcentaje aplicado: ${data.porcentaje}%
+
+💵 Formulario principal ($200.000): $${format(data.formulario200k)}
+📄 Formularios adicionales: $18.800
+
+🧾 Total formularios: $${format(data.totalFormularios)}
+
+🏛️ Arancel RUNA: $${format(data.runa)} (se abona aparte)
+
+✅ El total incluye formularios según el valor de la operación.`;
+  };
+
+  const handleCalcular = () => {
+    const valorFC = parseFloat(valor);
+    if (isNaN(valorFC)) return;
+
+    setData(crearPresupuesto(valorFC));
+  };
+
+  const copiarTexto = () => {
+  if (!data) return;
+  const valorFC = parseFloat(valor);
+  const texto = generarTexto(valorFC, data);
+
+  navigator.clipboard.writeText(texto);
+
+  setCopiado(true);
+  setTimeout(() => setCopiado(false), 2000);
+};
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-100">
+         {copiado && (
+      <div className="fixed top-5 right-5 bg-black text-white px-4 py-2 rounded-lg shadow-lg z-50">
+        ✅ Copiado
+      </div>
+    )}
+      <div className="bg-white p-6 rounded-2xl shadow-lg w-96 space-y-4">
+ <div className="mb-5 text-center">
+  <p className="text-xl text-gray-600">
+    Cálculo de patentamiento
+  </p>
+</div>
+      <div className="relative">
+  <span className="absolute -top-2 left-3 bg-white px-1 text-xs text-gray-500">
+    Monto a financiar
+  </span>
+
+  <input
+    type="number"
+    placeholder="Ej: 1500000"
+    value={valor}
+    onChange={(e) => setValor(e.target.value)}
+    className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+  />
+</div>
+        <button
+          onClick={handleCalcular}
+          className="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600"
+        >
+          Calcular
+        </button>
+
+        {data && (
+          <div className="mt-5 space-y-2">
+            <p>📊 % aplicado a SE8889: <strong>{data.porcentaje}%</strong></p>
+
+            <p>
+              💰 Formulario $200.000:
+              <strong> ${format(data.formulario200k)}</strong>
+            </p>
+
+            <p>
+              🧾 Total formularios y sellado:
+              <strong> ${format(data.totalFormularios)}</strong>
+            </p>
+
+            <p className="text-sm text-gray-600">
+              🏛️ RUNA: ${format(data.runa)} 
+            </p>
+
+            <button
+              onClick={copiarTexto}
+              className="w-full bg-green-500 text-white p-2 rounded mt-3 hover:bg-green-600"
+            >
+              Copiar presupuesto
+            </button>
+
+            <p className="text-xs text-gray-500 mt-4">
+  *Los importes corresponden a costos de patentamiento, incluyendo formularios, impuesto de sellos y gastos administrativos. 
+  Los valores pueden variar según la operación y disposiciones vigentes. El arancel RUNA se abona por separado.
+</p>
+          </div>
+          
+        )}
+      </div>
+    </div>
+  );
+}
+*/}
+
+
+
+"use client";
+import { useState } from "react";
+
+type Presupuesto = {
+  porcentaje: string;
+  formulario200k: number;
+  totalFormularios: number;
+  runa: number;
+};
+
+export default function Home() {
+  const [valor, setValor] = useState("");
+  const [data, setData] = useState<Presupuesto | null>(null);
+
+ 
+  const [tipoPago, setTipoPago] = useState<"contado" | "credito" | "tarjeta">("contado");
+  const [anticipo, setAnticipo] = useState("");
+  const [descuento, setDescuento] = useState("");
+  const [cuotas, setCuotas] = useState("");
+  const [valorCuota, setValorCuota] = useState("");
+
+  const [copiado, setCopiado] = useState(false);
+
+  const format = (num: number) => num.toLocaleString("es-AR");
+
+  const crearPresupuesto = (valorFC: number): Presupuesto => {
+    const porcentaje = Math.abs(((0.03 * valorFC) / 200000) * 100 - 100);
+
+    const formulario200k = (porcentaje / 100) * 200000;
+    const formulariosFijos = 18800;
+    const totalFormularios = formulario200k + formulariosFijos;
+    const runa = valorFC * 0.008;
+
+    return {
+      porcentaje: porcentaje.toFixed(2),
+      formulario200k: Math.round(formulario200k),
+      totalFormularios: Math.round(totalFormularios),
+      runa: Math.round(runa),
+    };
+  };
+
+  // 🧮 NUEVA LÓGICA
+  const calcularFinal = () => {
+    const monto = parseFloat(valor) || 0;
+    const ant = parseFloat(anticipo) || 0;
+    const desc = parseFloat(descuento) || 0;
+    const cuota = parseFloat(valorCuota) || 0;
+    const cant = parseInt(cuotas) || 0;
+
+    let precioFinal = monto;
+
+    if (tipoPago === "contado") {
+      precioFinal = monto - (monto * desc) / 100;
+    }
+
+    if (tipoPago !== "contado") {
+      precioFinal = cuota * cant;
+    }
+
+    const montoFinanciado = monto - ant;
+
+    return {
+      precioFinal: Math.round(precioFinal),
+      montoFinanciado: Math.round(montoFinanciado),
+    };
+  };
+
+  const generarTexto = (valorFC: number, data: Presupuesto) => {
+  const { precioFinal } = calcularFinal();
+  const desc = parseFloat(descuento) || 0;
+
+  return `📄 Presupuesto
+
+💰 Valor de la operación: $${format(valorFC)}
+
+${
+  tipoPago === "contado" && desc > 0
+    ? `🏷️ Precio contado con descuento: $${format(precioFinal)}\n del ${desc}%`
+    : ""
+}
+${
+  tipoPago !== "contado"
+    ? `💳 ${cuotas} cuotas de $${format(Number(valorCuota))}
+💰 Total estimado: $${format(precioFinal)}\n`
+    : ""
+}
+📄 Patentamiento: $${format(data.totalFormularios)}
+🏛️ RUNA: $${format(data.runa)}
+
+📌 Valores sujetos a condiciones vigentes`;
+};
+const handleCalcular = () => {
+  let valorFC = parseFloat(valor);
+  if (isNaN(valorFC)) return;
+
+  const desc = parseFloat(descuento) || 0;
+
+  // 👉 aplicar descuento ANTES de todo
+  if (tipoPago === "contado" && desc > 0) {
+    valorFC = valorFC - (valorFC * desc) / 100;
+  }
+
+  setData(crearPresupuesto(valorFC));
+};
+
+  const copiarTexto = () => {
+    if (!data) return;
+    const valorFC = parseFloat(valor);
+    const texto = generarTexto(valorFC, data);
+
+    navigator.clipboard.writeText(texto);
+
+    setCopiado(true);
+    setTimeout(() => setCopiado(false), 2000);
+  };
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-100">
+      {copiado && (
+        <div className="fixed top-5 right-5 bg-black text-white px-4 py-2 rounded-lg shadow-lg z-50">
+          ✅ Copiado
+        </div>
+      )}
+
+      <div className="bg-white p-6 rounded-2xl shadow-lg w-96 space-y-4">
+        <div className="text-center">
+          <p className="text-xl text-gray-600">
+            Cálculo de patentamiento
+          </p>
+        </div>
+
+        {/* MONTO */}
+        <div className="relative">
+          <span className="absolute -top-2 left-3 bg-white px-1 text-xs text-gray-500">
+            Monto de la operación
+          </span>
+
+          <input
+            type="number"
+            value={valor}
+            onChange={(e) => setValor(e.target.value)}
+            className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+          />
+        </div>
+
+        {/* TIPO DE PAGO */}
+        <select
+          value={tipoPago}
+          onChange={(e) => setTipoPago(e.target.value as any)}
+          className="w-full p-2 border rounded-lg"
+        >
+          <option value="contado">Contado</option>
+          <option value="credito">Crédito personal</option>
+          <option value="tarjeta">Tarjeta de crédito</option>
+        </select>
+
+        {/* ANTICIPO */}
+        <input
+          type="number"
+          placeholder="Anticipo"
+          value={anticipo}
+          onChange={(e) => setAnticipo(e.target.value)}
+          className="w-full p-2 border rounded-lg"
+        />
+
+        {/* DESCUENTO CONTADO */}
+        {tipoPago === "contado" && (
+          <input
+            type="number"
+            placeholder="Descuento (%)"
+            value={descuento}
+            onChange={(e) => setDescuento(e.target.value)}
+            className="w-full p-2 border rounded-lg"
+          />
+        )}
+
+        {/* CUOTAS */}
+        {tipoPago !== "contado" && (
+          <>
+            <input
+              type="number"
+              placeholder="Cantidad de cuotas"
+              value={cuotas}
+              onChange={(e) => setCuotas(e.target.value)}
+              className="w-full p-2 border rounded-lg"
+            />
+
+            <input
+              type="number"
+              placeholder="Valor de cuota"
+              value={valorCuota}
+              onChange={(e) => setValorCuota(e.target.value)}
+              className="w-full p-2 border rounded-lg"
+            />
+          </>
+        )}
+
+        <button
+          onClick={handleCalcular}
+          className="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600"
+        >
+          Calcular
+        </button>
+
+        {data && (
+          <div className="mt-3 space-y-2">
+            <p>📊 % aplicado: <strong>{data.porcentaje}%</strong></p>
+
+            <p>
+              🧾 Total formularios:
+              <strong> ${format(data.totalFormularios)}</strong>
+            </p>
+
+            <p className="text-sm text-gray-600">
+              🏛️ RUNA: ${format(data.runa)}
+            </p>
+
+            <button
+              onClick={copiarTexto}
+              className="w-full bg-green-500 text-white p-2 rounded mt-3 hover:bg-green-600"
+            >
+              Copiar presupuesto
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
