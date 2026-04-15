@@ -45,6 +45,15 @@ const ahorro = tipoPago === "contado"
   setData(null);
 };
 
+useEffect(() => {
+  const isStandalone =
+    window.matchMedia("(display-mode: standalone)").matches ||
+    (window.navigator as any).standalone;
+
+  if (isStandalone) {
+    setInstalable(false);
+  }
+}, []);
   useEffect(() => {
     const { precioFinal } = calcularFinal();
 
@@ -414,10 +423,10 @@ className="w-full px-4 py-3 my-4 rounded-xl bg-gradient-to-b from-white to-gray-
 </button>
   </div>
 )}
-{instalable && (
+{instalable && !window.matchMedia("(display-mode: standalone)").matches && (
   <button
     onClick={instalarApp}
-    className="w-full p-3 rounded-xl mt-2 shadow-md transition bg-blue-600 text-white hover:scale-[1.02] active:scale-[0.98]"
+    className="w-full p-3 rounded-xl mt-2 shadow-md bg-blue-600 text-white"
   >
     📲 Instalar app
   </button>

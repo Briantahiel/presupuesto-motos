@@ -1,7 +1,7 @@
 {
   "name": "Calculadora Cetrogar",
   "short_name": "Cetrogar",
-  "description": "App de presupuestos",
+  "description": "App de presupuestos desarrollada por Brian",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
