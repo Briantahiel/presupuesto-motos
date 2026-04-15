@@ -106,6 +106,22 @@ const ahorro = tipoPago === "contado"
     };
   };
 
+  const instalarApp = async () => {
+  if (!deferredPrompt) return;
+
+  deferredPrompt.prompt();
+  const { outcome } = await deferredPrompt.userChoice;
+
+  if (outcome === "accepted") {
+    console.log("Instalada ✅");
+  } else {
+    console.log("Cancelada ❌");
+  }
+
+  setDeferredPrompt(null);
+  setInstalable(false);
+};
+
 const copiarTexto = (data: Presupuesto) => {
   const { precioFinal, cuotaCalculada } = calcularFinal();
   const rec = Number(recargo) || 0;
@@ -185,22 +201,6 @@ const enviarWhatsApp = (data: Presupuesto) => {
     alert("Ingresá un número");
     return;
   }
-
-  const instalarApp = async () => {
-  if (!deferredPrompt) return;
-
-  deferredPrompt.prompt();
-  const { outcome } = await deferredPrompt.userChoice;
-
-  if (outcome === "accepted") {
-    console.log("Instalada ✅");
-  } else {
-    console.log("Cancelada ❌");
-  }
-
-  setDeferredPrompt(null);
-  setInstalable(false);
-};
 
   const textoOriginal = copiarTexto(data);
   const textoSinEmojis = quitarEmojis(textoOriginal);
@@ -413,6 +413,14 @@ className="w-full px-4 py-3 my-4 rounded-xl bg-gradient-to-b from-white to-gray-
   Resetear
 </button>
   </div>
+)}
+{instalable && (
+  <button
+    onClick={instalarApp}
+    className="w-full p-3 rounded-xl mt-2 shadow-md transition bg-blue-600 text-white hover:scale-[1.02] active:scale-[0.98]"
+  >
+    📲 Instalar app
+  </button>
 )}
 
         <p className="text-center text-xs text-gray-400 mt-4 opacity-0 animate-fadeUp delay-500 transition-all duration-300 hover:text-gray-600">
