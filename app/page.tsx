@@ -19,6 +19,8 @@ export default function Home() {
   const [cuotas, setCuotas] = useState("");
   const [recargo, setRecargo] = useState("");
   const [telefono, setTelefono] = useState("");
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+const [instalable, setInstalable] = useState(false);
   const monto = parseFloat(valor) || 0;
 const desc = parseFloat(descuento) || 0;
 
@@ -53,6 +55,17 @@ const ahorro = tipoPago === "contado"
 
     setData(crearPresupuesto(precioFinal));
   }, [valor, descuento, recargo, tipoPago, cuotas]);
+  useEffect(() => {
+  const handler = (e: any) => {
+    e.preventDefault();
+    setDeferredPrompt(e);
+    setInstalable(true);
+  };
+
+  window.addEventListener("beforeinstallprompt", handler);
+
+  return () => window.removeEventListener("beforeinstallprompt", handler);
+}, []);
 
   const crearPresupuesto = (valorFC: number): Presupuesto => {
     const porcentaje = Math.abs(((0.03 * valorFC) / 200000) * 100 - 100);
@@ -172,6 +185,22 @@ const enviarWhatsApp = (data: Presupuesto) => {
     alert("Ingresá un número");
     return;
   }
+
+  const instalarApp = async () => {
+  if (!deferredPrompt) return;
+
+  deferredPrompt.prompt();
+  const { outcome } = await deferredPrompt.userChoice;
+
+  if (outcome === "accepted") {
+    console.log("Instalada ✅");
+  } else {
+    console.log("Cancelada ❌");
+  }
+
+  setDeferredPrompt(null);
+  setInstalable(false);
+};
 
   const textoOriginal = copiarTexto(data);
   const textoSinEmojis = quitarEmojis(textoOriginal);
