@@ -34,7 +34,7 @@ export default function RootLayout({
     >
       <head>
         <link rel="manifest" href="/manifest.json" />
-        <meta name="theme-color" content="#16a34a" />
+        <meta name="theme-color" content="#0d0761" />
       </head>
 
       <body className="min-h-full flex flex-col">

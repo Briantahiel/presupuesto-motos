@@ -4,7 +4,7 @@
   "description": "App de presupuestos desarrollada por Brian",
   "start_url": "/",
   "scope": "/",
-  "display": "standalone",
+  "display": "fullscreen",
   "orientation": "portrait",
   "background_color": "#ffffff",
   "theme_color": "#16a34a",

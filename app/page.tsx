@@ -21,6 +21,12 @@ export default function Home() {
   const [telefono, setTelefono] = useState("");
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
 const [instalable, setInstalable] = useState(false);
+
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    const timer = setTimeout(() => setLoading(false), 800);
+    return () => clearTimeout(timer);
+  }, []);
   const monto = parseFloat(valor) || 0;
 const desc = parseFloat(descuento) || 0;
 
@@ -221,7 +227,16 @@ const enviarWhatsApp = (data: Presupuesto) => {
 };
 
   const { precioFinal, cuotaCalculada } = calcularFinal();
-
+  if (loading) {
+    return (
+      <div className="fixed inset-0 flex items-center justify-center bg-[#0B1320] text-white">
+        <div className="text-center">
+          <p className="text-2xl font-bold text-orange-500">Cetrogar</p>
+          <p className="text-sm opacity-70">Motos</p>
+        </div>
+      </div>
+    );
+  }
   return (
 <div className="min-h-screen flex items-start justify-center pt-10 pb-20 bg-gradient-to-br from-gray-100 to-gray-200">
       {copiado && (
