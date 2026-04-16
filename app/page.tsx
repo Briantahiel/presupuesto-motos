@@ -445,7 +445,7 @@ className="w-full px-4 py-3 my-4 rounded-xl bg-gradient-to-b from-white to-gray-
   <div className="text-xs bg-gray-100 p-3 rounded-xl">
     <p>Impuesto Sellos Motos: $200.000</p>
     <p>Gastos administrativos tdM: $1.800</p>
-    <p>RUNA: $17.000</p>
+    <p>Inscr CC Motov Grav RUNA: $17.000</p>
     <p>Placa metálica: $1</p>
     <p className="mt-2 text-gray-500">
       Valores sujetos a cambios sin previo aviso
