@@ -21,6 +21,7 @@ export default function Home() {
   const [telefono, setTelefono] = useState("");
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
 const [instalable, setInstalable] = useState(false);
+const [mostrarInfo, setMostrarInfo] = useState(false);
 
   const [loading, setLoading] = useState(true);
   useEffect(() => {
@@ -85,7 +86,7 @@ useEffect(() => {
   const crearPresupuesto = (valorFC: number): Presupuesto => {
     const porcentaje = Math.abs(((0.03 * valorFC) / 200000) * 100 - 100);
     const formulario200k = 200000 - (200000 * porcentaje) / 100;
-    const totalFormularios = formulario200k + 18800;
+    const totalFormularios = formulario200k + 18801;
     const runa = valorFC * 0.008;
 
     return {
@@ -436,7 +437,23 @@ className="w-full px-4 py-3 my-4 rounded-xl bg-gradient-to-b from-white to-gray-
   <RotateCcw size={16} />
   Resetear
 </button>
+<button onClick={() => setMostrarInfo(!mostrarInfo)}>
+  ¿Cómo se calcula?
+</button>
+
+{mostrarInfo && (
+  <div className="text-xs bg-gray-100 p-3 rounded-xl">
+    <p>Impuesto Sellos Motos: $200.000</p>
+    <p>Gastos administrativos tdM: $1.800</p>
+    <p>RUNA: $17.000</p>
+    <p>Placa metálica: $1</p>
+    <p className="mt-2 text-gray-500">
+      Valores sujetos a cambios sin previo aviso
+    </p>
   </div>
+)}
+  </div>
+  
 )}
 {instalable && !window.matchMedia("(display-mode: standalone)").matches && (
   <button
