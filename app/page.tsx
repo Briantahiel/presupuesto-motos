@@ -23,6 +23,15 @@ export default function Home() {
 const [instalable, setInstalable] = useState(false);
 const [mostrarInfo, setMostrarInfo] = useState(false);
 
+useEffect(() => {
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker
+      .register("/sw.js")
+      .then(() => console.log("SW registrado"))
+      .catch((err) => console.log("SW error", err));
+  }
+}, []);
+
   const [loading, setLoading] = useState(true);
   useEffect(() => {
     const timer = setTimeout(() => setLoading(false), 800);
