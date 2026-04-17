@@ -104,7 +104,10 @@ export default function Home() {
   }, [ahorro]);
 
   const [copiado, setCopiado] = useState(false);
-  const cuotasActual = tipoPago === "tarjeta" ? cuotasTarjeta : cuotasCredito;
+  const cuotasActual =
+  tipoPago === "tarjeta"
+    ? cuotasTarjeta || "0"
+    : cuotasCredito || "0";
 
   const deshabilitado = tipoPago === "tarjeta" && !cuotasTarjeta;
   const format = (num: number) => num.toLocaleString("es-AR");
@@ -451,16 +454,14 @@ Cualquier duda, estoy para ayudarte.`;
     setDescuento(String(val));
   }}
   className="w-full px-4 py-3 rounded-xl bg-gradient-to-b from-white to-gray-50 border border-gray-200 shadow-sm"
-/>
+/>          </div>
 
           {/* CUOTAS */}
-          <div
-            className={`transition-all duration-300 ${
-              tipoPago !== "contado"
-                ? "max-h-40 opacity-100 pointer-events-auto"
-                : "max-h-0 opacity-0 pointer-events-none"
-            }`}
-          >
+       <div className={`transition-all duration-300 ${
+  tipoPago !== "contado"
+    ? "max-h-40 opacity-100 pointer-events-auto"
+    : "max-h-0 opacity-0 pointer-events-none"
+}`}>
             <div className="flex items-center mt-4">
               <div className="flex-1 h-[1px] bg-gradient-to-r from-transparent to-gray-300" />
 
@@ -471,25 +472,25 @@ Cualquier duda, estoy para ayudarte.`;
               <div className="flex-1 h-[1px] bg-gradient-to-l from-transparent to-gray-300" />
             </div>
             <div className="grid grid-cols-4 gap-2 mt-2">
-              {[3, 6, 9, 12, 15, 18, 21, 24].map((c) => (
-                <button
-                  key={c}
-                  onClick={() => {
-                    if (tipoPago === "tarjeta") {
-                      setCuotasTarjeta(String(c));
-                    } else if (tipoPago === "credito") {
-                      setCuotasCredito(String(c));
-                    }
-                  }}
-                  className={`py-1 px-2 rounded-lg text-xs border transition-all duration-200 ${
-                    cuotasActual === String(c)
-                      ? "bg-blue-500 text-white shadow-md -translate-y-0.5 border-blue-500"
-                      : "bg-white hover:bg-gray-100 hover:-translate-y-0.5 border-gray-400"
-                  }`}
-                >
-                  {c}
-                </button>
-              ))}
+             {[3, 6, 9, 12, 15, 18, 21, 24].map((c) => (
+  <button
+    key={c}
+    onClick={() => {
+      if (tipoPago === "tarjeta") {
+        setCuotasTarjeta(String(c));
+      } else if (tipoPago === "credito") {
+        setCuotasCredito(String(c));
+      }
+    }}
+    className={`py-1 px-2 rounded-lg text-xs border transition-all duration-200 ${
+      (tipoPago === "tarjeta" ? cuotasTarjeta : cuotasCredito) === String(c)
+        ? "bg-blue-500 text-white shadow-md -translate-y-0.5 border-blue-500"
+        : "bg-white hover:bg-gray-100 hover:-translate-y-0.5 border-gray-400"
+    }`}
+  >
+    {c}
+  </button>
+))}
             </div>
           </div>
 
@@ -728,6 +729,6 @@ Cualquier duda, estoy para ayudarte.`;
         </p>
       </div>
       </div>
-    </div>
+
   );
 }
