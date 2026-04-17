@@ -178,7 +178,7 @@ export default function Home() {
 
   const calcularFinal = () => {
     const monto = parseFloat(valor) || 0;
-    const desc = parseFloat(descuento) || 0;
+    const desc = Math.min(99, Math.max(0, parseFloat(descuento) || 0));
     const cant =
       tipoPago === "tarjeta"
         ? Math.max(0, parseInt(cuotasTarjeta) || 0)
@@ -437,14 +437,21 @@ Cualquier duda, estoy para ayudarte.`;
                 : "max-h-0 opacity-0 pointer-events-none"
             }`}
           >
-            <input
-              type="number"
-              placeholder="Descuento (%)"
-              value={descuento}
-              onChange={(e) => setDescuento(e.target.value)}
-              className="w-full px-4 py-3 rounded-xl bg-gradient-to-b from-white to-gray-50 border border-gray-200 shadow-sm transition-all duration-200 focus:outline-none focus:ring-0 focus:border-blue-500"
-            />
-          </div>
+<input
+  type="number"
+  placeholder="Descuento (%)"
+  value={descuento}
+  max={99}
+  onChange={(e) => {
+    let val = Number(e.target.value);
+
+    if (val > 99) val = 99;
+    if (val < 0) val = 0;
+
+    setDescuento(String(val));
+  }}
+  className="w-full px-4 py-3 rounded-xl bg-gradient-to-b from-white to-gray-50 border border-gray-200 shadow-sm"
+/>
 
           {/* CUOTAS */}
           <div
