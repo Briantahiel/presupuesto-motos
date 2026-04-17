@@ -727,6 +727,7 @@ Cualquier duda, estoy para ayudarte.`;
           Developed by Brian Gómez · Cetrogar Zárate
         </p>
       </div>
+      </div>
     </div>
   );
 }
