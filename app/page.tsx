@@ -775,6 +775,61 @@ export default function Home() {
   const [mostrarInfo, setMostrarInfo] = useState(false);
   const [cuotaAnimada, setCuotaAnimada] = useState(0);
 
+   const calcularFinal = () => {
+    const monto = parseFloat(valor) || 0;
+    const desc = Math.min(99, Math.max(0, parseFloat(descuento) || 0));
+    const cant =
+      tipoPago === "tarjeta"
+        ? Math.max(0, parseInt(cuotasTarjeta) || 0)
+        : Math.max(0, parseInt(cuotasCredito) || 0);
+    const rec = parseFloat(recargo) || 0;
+
+    let precioFinal = monto;
+    let cuotaCalculada = 0;
+
+    if (tipoPago === "contado") {
+      precioFinal = monto - (monto * desc) / 100;
+    }
+
+if (tipoPago === "tarjeta") {
+const totalConRecargo = monto + (monto * rec) / 100;
+
+const anti = Math.min(
+  parseFloat(anticipo) || 0,
+  totalConRecargo
+);
+
+const montoFinanciado = Math.max(0, totalConRecargo - anti);
+
+cuotaCalculada = cant > 0 ? montoFinanciado / cant : 0;
+precioFinal = totalConRecargo;
+}
+    if (tipoPago === "credito") {
+      const cuota = parseFloat(valorCuota) || 0;
+      const cant = parseInt(cuotasCredito) || 0;
+      const anti = parseFloat(anticipo) || 0;
+
+      if (!cuota || !cant) {
+        return { precioFinal: 0, cuotaCalculada: 0 };
+      }
+
+      if (tipoCredito === "simple") {
+        precioFinal = cuota * cant;
+      }
+
+      if (tipoCredito === "anticipo") {
+        precioFinal = cuota * cant + anti;
+      }
+
+      cuotaCalculada = cuota;
+    }
+
+    return {
+      precioFinal: Math.round(precioFinal),
+      cuotaCalculada: Math.round(cuotaCalculada),
+    };
+  };
+  const { precioFinal, cuotaCalculada } = calcularFinal();
 
   useEffect(() => {
     if ("serviceWorker" in navigator) {
@@ -826,6 +881,29 @@ export default function Home() {
 
     return () => clearInterval(counter);
   }, [ahorro]);
+  useEffect(() => {
+  if (!cuotaCalculada || cuotaCalculada <= 0) {
+    setCuotaAnimada(0);
+    return;
+  }
+
+  let start = 0;
+  const duration = 600;
+  const increment = cuotaCalculada / (duration / 16);
+
+  const counter = setInterval(() => {
+    start += increment;
+
+    if (start >= cuotaCalculada) {
+      setCuotaAnimada(cuotaCalculada);
+      clearInterval(counter);
+    } else {
+      setCuotaAnimada(Math.floor(start));
+    }
+  }, 16);
+
+  return () => clearInterval(counter);
+}, [cuotaCalculada]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -838,6 +916,7 @@ export default function Home() {
       }
     } catch (e) {}
   }, [ahorro]);
+
 
   const [copiado, setCopiado] = useState(false);
   const cuotasActual =
@@ -915,60 +994,60 @@ export default function Home() {
     };
   }; 
 
-  const calcularFinal = () => {
-    const monto = parseFloat(valor) || 0;
-    const desc = Math.min(99, Math.max(0, parseFloat(descuento) || 0));
-    const cant =
-      tipoPago === "tarjeta"
-        ? Math.max(0, parseInt(cuotasTarjeta) || 0)
-        : Math.max(0, parseInt(cuotasCredito) || 0);
-    const rec = parseFloat(recargo) || 0;
+//   const calcularFinal = () => {
+//     const monto = parseFloat(valor) || 0;
+//     const desc = Math.min(99, Math.max(0, parseFloat(descuento) || 0));
+//     const cant =
+//       tipoPago === "tarjeta"
+//         ? Math.max(0, parseInt(cuotasTarjeta) || 0)
+//         : Math.max(0, parseInt(cuotasCredito) || 0);
+//     const rec = parseFloat(recargo) || 0;
 
-    let precioFinal = monto;
-    let cuotaCalculada = 0;
+//     let precioFinal = monto;
+//     let cuotaCalculada = 0;
 
-    if (tipoPago === "contado") {
-      precioFinal = monto - (monto * desc) / 100;
-    }
+//     if (tipoPago === "contado") {
+//       precioFinal = monto - (monto * desc) / 100;
+//     }
 
-if (tipoPago === "tarjeta") {
-const totalConRecargo = monto + (monto * rec) / 100;
+// if (tipoPago === "tarjeta") {
+// const totalConRecargo = monto + (monto * rec) / 100;
 
-const anti = Math.min(
-  parseFloat(anticipo) || 0,
-  totalConRecargo
-);
+// const anti = Math.min(
+//   parseFloat(anticipo) || 0,
+//   totalConRecargo
+// );
 
-const montoFinanciado = Math.max(0, totalConRecargo - anti);
+// const montoFinanciado = Math.max(0, totalConRecargo - anti);
 
-cuotaCalculada = cant > 0 ? montoFinanciado / cant : 0;
-precioFinal = totalConRecargo;
-}
-    if (tipoPago === "credito") {
-      const cuota = parseFloat(valorCuota) || 0;
-      const cant = parseInt(cuotasCredito) || 0;
-      const anti = parseFloat(anticipo) || 0;
+// cuotaCalculada = cant > 0 ? montoFinanciado / cant : 0;
+// precioFinal = totalConRecargo;
+// }
+//     if (tipoPago === "credito") {
+//       const cuota = parseFloat(valorCuota) || 0;
+//       const cant = parseInt(cuotasCredito) || 0;
+//       const anti = parseFloat(anticipo) || 0;
 
-      if (!cuota || !cant) {
-        return { precioFinal: 0, cuotaCalculada: 0 };
-      }
+//       if (!cuota || !cant) {
+//         return { precioFinal: 0, cuotaCalculada: 0 };
+//       }
 
-      if (tipoCredito === "simple") {
-        precioFinal = cuota * cant;
-      }
+//       if (tipoCredito === "simple") {
+//         precioFinal = cuota * cant;
+//       }
 
-      if (tipoCredito === "anticipo") {
-        precioFinal = cuota * cant + anti;
-      }
+//       if (tipoCredito === "anticipo") {
+//         precioFinal = cuota * cant + anti;
+//       }
 
-      cuotaCalculada = cuota;
-    }
+//       cuotaCalculada = cuota;
+//     }
 
-    return {
-      precioFinal: Math.round(precioFinal),
-      cuotaCalculada: Math.round(cuotaCalculada),
-    };
-  };
+//     return {
+//       precioFinal: Math.round(precioFinal),
+//       cuotaCalculada: Math.round(cuotaCalculada),
+//     };
+//   };
 
   const instalarApp = async () => {
     if (!deferredPrompt) return;
@@ -999,6 +1078,7 @@ precioFinal = totalConRecargo;
       tipoPago === "contado"
         ? Math.round((valorOriginal * Number(descuento || 0)) / 100)
         : 0;
+
 
 return `Cetrogar 🏍️
 
@@ -1087,7 +1167,6 @@ Cualquier duda, estoy para ayudarte.`;
     window.open(url, "_blank");
   };
 
-  const { precioFinal, cuotaCalculada } = calcularFinal();
   if (loading) {
     return (
       <div className="fixed inset-0 flex items-center justify-center bg-[#0B1320] text-white">
@@ -1393,8 +1472,7 @@ Cualquier duda, estoy para ayudarte.`;
     cuotaAnimada === cuotaCalculada ? "scale-110" : "scale-100"
   }`}
 >
-  {cuotasActual} cuotas de ${format(cuotaCalculada)}
-</p>
+${cuotasActual} cuotas de ${format(cuotaAnimada)}</p>
 
   {Number(recargo) > 0 && (
     <p className="text-xs opacity-80 mt-1">
@@ -1412,13 +1490,12 @@ Cualquier duda, estoy para ayudarte.`;
     </div>
   </div>
 )}
-
             {/* CRÉDITO */}
-            {tipoPago === "credito" && (
+            {/* {tipoPago === "credito" && (
               <>
                 <p className="flex items-center gap-2">
                   <CreditCard size={16} />
-                  Cuota: <strong>${format(cuotaCalculada)}</strong>
+                  Cuota: <strong>${format(cuotaAnimada)}</strong>
                 </p>
 
                 <p className="flex items-center gap-2">
@@ -1426,8 +1503,43 @@ Cualquier duda, estoy para ayudarte.`;
                   Operación: <strong>${format(precioFinal)}</strong>
                 </p>
               </>
-            )}
+            )} */}
 
+            {tipoPago === "credito" && (
+  <div className="bg-gray-50 rounded-xl p-4 space-y-3 border">
+
+    {/* BLOQUE DESTACADO */}
+    <div className="relative overflow-hidden rounded-xl p-4 bg-gradient-to-r from-purple-500 to-indigo-600 text-white shadow-md animate-fadeIn text-center">
+
+      {/* shimmer */}
+      <div className="absolute inset-0 opacity-20 bg-[linear-gradient(120deg,transparent,white,transparent)] animate-shimmer" />
+
+      <p className="text-xs opacity-90">Pagás</p>
+
+      <p
+        className={`text-2xl font-bold transition-transform duration-200 ${
+          cuotaAnimada === cuotaCalculada ? "scale-110" : "scale-100"
+        }`}
+      >
+        {cuotasActual} cuotas de ${format(cuotaAnimada)}
+      </p>
+
+      {tipoCredito === "anticipo" && parseFloat(anticipo) > 0 && (
+        <p className="text-xs opacity-80 mt-1">
+          anticipo de ${format(parseFloat(anticipo))}
+        </p>
+      )}
+    </div>
+
+    {/* TOTAL */}
+    <div className="flex justify-between text-sm pt-2 border-t">
+      <span className="text-gray-600">Total de la operación</span>
+      <span className="font-bold text-lg">
+        ${format(precioFinal)}
+      </span>
+    </div>
+  </div>
+)}
             <p className="flex items-center gap-2">
               <Percent size={16} />
               Aplicado: <strong>{data.porcentaje}%</strong>
