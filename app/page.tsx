@@ -736,7 +736,6 @@
 import { useState, useEffect } from "react";
 import "./globals.css";
 import {
-  CreditCard,
   Percent,
   FileText,
   Landmark,
@@ -753,6 +752,7 @@ type Presupuesto = {
 };
 
 export default function Home() {
+  const STORAGE_KEY = "presupuesto_app";
   const [valor, setValor] = useState("");
   const [data, setData] = useState<Presupuesto | null>(null);
   const [modelo, setModelo] = useState("");
@@ -775,6 +775,76 @@ export default function Home() {
   const [mostrarInfo, setMostrarInfo] = useState(false);
   const [cuotaAnimada, setCuotaAnimada] = useState(0);
 
+  useEffect(() => {
+  const state = {
+    valor,
+    modelo,
+    tipoPago,
+    tipoCredito,
+    valorCuota,
+    anticipo,
+    descuento,
+    cuotasTarjeta,
+    cuotasCredito,
+    recargo,
+    telefono,
+  };
+
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}, [
+  valor,
+  modelo,
+  tipoPago,
+  tipoCredito,
+  valorCuota,
+  anticipo,
+  descuento,
+  cuotasTarjeta,
+  cuotasCredito,
+  recargo,
+  telefono,
+]);
+useEffect(() => {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (!saved) return;
+
+  const state = JSON.parse(saved);
+
+  setValor(state.valor || "");
+  setModelo(state.modelo || "");
+  setTipoPago(state.tipoPago || "contado");
+  setTipoCredito(state.tipoCredito || "simple");
+  setValorCuota(state.valorCuota || "");
+  setAnticipo(state.anticipo || "");
+  setDescuento(state.descuento || "");
+  setCuotasTarjeta(state.cuotasTarjeta || "");
+  setCuotasCredito(state.cuotasCredito || "");
+  setRecargo(state.recargo || "");
+  setTelefono(state.telefono || "");
+}, []);
+
+const compartir = async (texto: string) => {
+  if (navigator.share) {
+    try {
+      await navigator.share({
+        text: texto,
+      });
+    } catch (e) {}
+  } else {
+    navigator.clipboard.writeText(texto);
+  }
+};
+const [online, setOnline] = useState(true);
+
+useEffect(() => {
+  const update = () => setOnline(navigator.onLine);
+  window.addEventListener("online", update);
+  window.addEventListener("offline", update);
+  return () => {
+    window.removeEventListener("online", update);
+    window.removeEventListener("offline", update);
+  };
+}, []);
    const calcularFinal = () => {
     const monto = parseFloat(valor) || 0;
     const desc = Math.min(99, Math.max(0, parseFloat(descuento) || 0));
@@ -1179,11 +1249,11 @@ Cualquier duda, estoy para ayudarte.`;
   }
   return (
     <div className="min-h-screen flex items-start justify-center pt-10 pb-20 bg-gradient-to-br from-gray-100 to-gray-200">
-      {copiado && (
-        <div className="fixed top-5 right-5 z-[9999] animate-in fade-in slide-in-from-top-2 bg-black/90 text-white px-4 py-2 rounded-xl shadow-xl backdrop-blur">
-          ✅ Copiado
-        </div>
-      )}
+ {copiado && (
+  <div className="fixed top-5 right-5 z-50 animate-bounce bg-green-600 text-white px-4 py-2 rounded-xl shadow-lg">
+    ✅ Listo
+  </div>
+)}
 
       <div className="bg-white/90 backdrop-blur p-6 rounded-3xl shadow-xl w-90 space-y-6 border border-gray-200">
         {/* <h1 className="text-center text-xl font-semibold text-gray-800">
@@ -1195,7 +1265,11 @@ Cualquier duda, estoy para ayudarte.`;
           <p className="px-3 py-1 text-xs font-semibold text-gray-600 uppercase tracking-wide">
             Cálculo de patentamiento
           </p>
-
+{!online && (
+  <div className="bg-red-500 text-white text-center text-xs p-2 rounded">
+    Sin conexión (modo offline)
+  </div>
+)}
           <div className="flex-1 h-[1px] bg-gradient-to-l from-transparent to-gray-300" />
         </div>
         <input
@@ -1310,8 +1384,8 @@ Cualquier duda, estoy para ayudarte.`;
     {c}
   </button>
 ))}
-            </div>
-          </div>
+</div>
+</div>
 
 {/* TARJETA */}
 <div
@@ -1614,6 +1688,12 @@ ${cuotasActual} cuotas de ${format(cuotaAnimada)}</p>
             )}
           </div>
         )}
+        <button
+  onClick={() => data && compartir(copiarTexto(data))}
+  className="w-full p-3 rounded-xl bg-blue-600 text-white"
+>
+  Compartir
+</button>
         {instalable &&
           !window.matchMedia("(display-mode: standalone)").matches && (
             <button

@@ -1,13 +1,10 @@
 {
-  "name": "Calculadora Cetrogar",
+  "name": "Cetrogar Motos",
   "short_name": "Cetrogar",
-  "description": "App de presupuestos desarrollada por Brian",
   "start_url": "/",
-  "scope": "/",
   "display": "fullscreen",
-  "orientation": "portrait",
-  "background_color": "#ffffff",
-  "theme_color": "#16a34a",
+  "background_color": "#0B1320",
+  "theme_color": "#0B1320",
   "icons": [
     {
       "src": "/icon-192.png",
