@@ -1255,7 +1255,7 @@ Cualquier duda, estoy para ayudarte.`;
 )}
 
       <div className="bg-white/90 backdrop-blur p-6 rounded-3xl shadow-xl w-90 space-y-6 border border-gray-200">
-        <h1 className="text-center text-md font-semibold text-gray-800">
+        <h1 className="text-center text-md text-gray-800">
     Simulador de compra y financiación
         </h1>
         <div className="flex items-center mt-4">
