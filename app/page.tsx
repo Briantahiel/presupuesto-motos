@@ -1135,69 +1135,67 @@ precioFinal = totalConRecargo;
     setInstalable(false);
   };
 
-  
-  const copiarTexto = (data: Presupuesto) => {
-    const { precioFinal, cuotaCalculada } = calcularFinal();
-    const rec = Number(recargo) || 0;
-    const valorOriginal = parseFloat(valor) || 0;
-    const hoy = new Date();
-    const validez = new Date(hoy);
-    validez.setDate(hoy.getDate() + 3);
+const copiarTexto = (data: Presupuesto) => {
+  const { precioFinal, cuotaCalculada } = calcularFinal();
+  const valorOriginal = parseFloat(valor) || 0;
+  const rec = Number(recargo) || 0;
 
-    const ahorro =
-      tipoPago === "contado"
-        ? Math.round((valorOriginal * Number(descuento || 0)) / 100)
-        : 0;
+  const ahorro =
+    tipoPago === "contado"
+      ? Math.round((valorOriginal * Number(descuento || 0)) / 100)
+      : 0;
 
+  const hoy = new Date().toLocaleDateString("es-AR");
 
-return `Cetrogar 🏍️
+  return `Cetrogar 🏍️
 
-📄 Presupuesto - ${new Date().toLocaleDateString("es-AR")}
-${modelo ? `Modelo: ${modelo}\n` : ""}
+📅 Presupuesto actualizado: ${hoy}
+${modelo ? `🏁 Modelo: ${modelo}\n` : ""}
 
 💰 Precio de lista: $${format(valorOriginal)}
 
 ${
-  tipoPago === "tarjeta"
-    ? `
-💳 Financiación con tarjeta
-
-${parseFloat(anticipo) > 0 ? `💵 Entrega inicial: $${format(parseFloat(anticipo))}\n` : ""}💳 Monto financiado: $${format(precioFinal - (parseFloat(anticipo) || 0))}
-
-👉 ${cuotasActual} cuotas de $${format(cuotaCalculada)}
-${rec > 0 ? `(${rec}% de recargo incluido)` : "(sin interés)"}
-
-💰 Total final: $${format(precioFinal)}
-`
-    : ""
-}
-
-${
-  tipoPago === "credito"
-    ? `
-💳 Crédito personal
-
-👉 ${cuotasActual} cuotas de $${format(cuotaCalculada)}
-${tipoCredito === "anticipo" ? `💵 Entrega inicial: $${format(parseFloat(anticipo) || 0)}\n` : ""}
-
-💰 Total final: $${format(precioFinal)}
-`
-    : ""
-}
-
-${
-  tipoPago === "contado" && ahorro > 0
-    ? `
-💸 Promo contado
-Descuento: ${descuento}%
-Ahorrás: $${format(ahorro)}
+  tipoPago === "contado"
+    ? ahorro > 0
+      ? `🟢 PROMO CONTADO
 
 💵 Precio final: $${format(precioFinal)}
-`
-    : ""
-}
+🎯 Ahorrás: $${format(ahorro)} (${descuento}% OFF)
 
-📄 Patentamiento: $${format(data.totalFormularios)}
+`
+      : `💵 Precio final: $${format(precioFinal)}
+
+`
+    : ""}
+${
+  tipoPago === "tarjeta"
+    ? `🔵 FINANCIACIÓN CON TARJETA
+
+${
+  parseFloat(anticipo) > 0
+    ? `💵 Entrega inicial: $${format(parseFloat(anticipo))}\n`
+    : ""
+}📊 ${cuotasActual} cuotas de $${format(cuotaCalculada)}
+${rec > 0 ? `(${rec}% de recargo incluido)` : "sin interés"}
+
+💰 Total final: $${format(precioFinal)}
+
+`
+    : ""}
+${
+  tipoPago === "credito"
+    ? `🟣 CRÉDITO PERSONAL
+
+📊 ${cuotasActual} cuotas de $${format(cuotaCalculada)}
+${
+  tipoCredito === "anticipo" && parseFloat(anticipo) > 0
+    ? `💵 Entrega inicial: $${format(parseFloat(anticipo))}\n`
+    : ""
+}💰 Total financiado: $${format(precioFinal)}
+
+`
+    : ""}
+📄 Patentamiento estimado: $${format(data.totalFormularios)}
 🏛️ RUNA: $${format(data.runa)}
 
 Entrega estimada: inmediata / 48 hs
@@ -1216,11 +1214,12 @@ Incluye:
 📌 Valores sujetos a condiciones vigentes y cambios sin previo aviso
 
 Cetrogar · Justa Lima 337, Zárate
-Asesor comercial: Brian Gómez
+Asesor comercial: Brian Gómez 
 
 Si te interesa, podemos avanzar hoy mismo y dejar la unidad reservada. 
 Cualquier duda, estoy para ayudarte.`;
   };
+
 
   const enviarWhatsApp = (data: Presupuesto) => {
     if (!telefono) {
@@ -1256,15 +1255,12 @@ Cualquier duda, estoy para ayudarte.`;
 )}
 
       <div className="bg-white/90 backdrop-blur p-6 rounded-3xl shadow-xl w-90 space-y-6 border border-gray-200">
-        {/* <h1 className="text-center text-xl font-semibold text-gray-800">
-          Cálculo de patentamiento
-        </h1> */}
+        <h1 className="text-center text-md font-semibold text-gray-800">
+    Simulador de compra y financiación
+        </h1>
         <div className="flex items-center mt-4">
           <div className="flex-1 h-[1px] bg-gradient-to-r from-transparent to-gray-300" />
 
-          <p className="px-3 py-1 text-xs font-semibold text-gray-600 uppercase tracking-wide">
-            Cálculo de patentamiento
-          </p>
 {!online && (
   <div className="bg-red-500 text-white text-center text-xs p-2 rounded">
     Sin conexión (modo offline)
@@ -1493,7 +1489,7 @@ Cualquier duda, estoy para ayudarte.`;
                           ahorroAnimado === ahorro ? "scale-110" : "scale-100"
                         }`}
                       >
-                        -${format(ahorroAnimado)}
+                        ${format(ahorroAnimado)}
                       </p>
 
                       <p className="text-xs opacity-90">{descuento}% OFF</p>
@@ -1546,7 +1542,7 @@ Cualquier duda, estoy para ayudarte.`;
     cuotaAnimada === cuotaCalculada ? "scale-110" : "scale-100"
   }`}
 >
-${cuotasActual} cuotas de ${format(cuotaAnimada)}</p>
+{cuotasActual} cuotas de ${format(cuotaAnimada)}</p>
 
   {Number(recargo) > 0 && (
     <p className="text-xs opacity-80 mt-1">
