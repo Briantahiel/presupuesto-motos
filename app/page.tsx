@@ -27,16 +27,7 @@ const clamp = (num: number, min: number, max: number) => {
   return Math.min(Math.max(num, min), max);
 };
 
-// Evita negativos y NaN
-const sanitizeNumberInput = (value: string) => {
-  if (value === "") return "";
-  const num = Number(value);
-  if (isNaN(num)) return "";
-  return String(Math.max(0, num));
-};
-
-// Evita bug del "0 pegado"
-const sanitizeOptionalNumber = (value: string) => {
+const sanitizeNumber = (value: string) => {
   if (value === "") return "";
   const num = Number(value);
   if (isNaN(num)) return "";
@@ -56,7 +47,7 @@ export default function Home() {
   const STORAGE_KEY = "presupuesto_app";
 
   const [valor, setValor] = useState("");
-  const [data, setData] = useState<Presupuesto | null>(null);
+  // const [data, setData] = useState<Presupuesto | null>(null);
   const [modelo, setModelo] = useState("");
   const [tipoPago, setTipoPago] = useState<"contado" | "credito" | "tarjeta">("contado");
   const [tipoCredito, setTipoCredito] = useState<"simple" | "anticipo">("simple");
@@ -76,6 +67,27 @@ export default function Home() {
   const factor = Math.pow(10, decimales);
   return Math.trunc(num * factor) / factor;
 };
+const crearPresupuesto = (valorFC: number): Presupuesto => {
+    const porcentajeRaw = ((0.03 * valorFC) / 200000) * 100 - 100;
+
+    const porcentaje = truncar(
+  Math.min(Math.abs(porcentajeRaw), 100),
+  2
+);
+
+    const formulario200k = Math.max(0, 200000 - (200000 * porcentaje) / 100);
+    const totalFormularios = formulario200k + 18801;
+    const runa = valorFC * 0.008;
+
+    return {
+      // porcentaje: String(truncar(porcentaje, 2)),
+      porcentaje: String(porcentaje),
+      formulario200k: Math.round(formulario200k),
+      totalFormularios: Math.round(totalFormularios),
+      runa: Math.round(runa),
+    };
+  }; 
+
   const calcularFinal = () => {
   const monto = clamp(toNumber(valor), 0, 13000000);
   const desc = clamp(toNumber(descuento), 0, 99);
@@ -89,9 +101,9 @@ export default function Home() {
   let precioFinal = 0;
   let cuotaCalculada = 0;
 
-  if (!monto) {
-    return { precioFinal: 0, cuotaCalculada: 0 };
-  }
+if (monto <= 0) {
+  return { precioFinal: 0, cuotaCalculada: 0 };
+}
 
   /* ================= CONTADO ================= */
   if (tipoPago === "contado") {
@@ -184,7 +196,10 @@ export default function Home() {
     recargo,
     telefono,
   ]);
-
+const data = useMemo(() => {
+  if (!Number.isFinite(precioFinal)) return null;
+  return crearPresupuesto(precioFinal);
+}, [precioFinal]);
   /* ================= CARGAR LOCALSTORAGE ================= */
   useEffect(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
@@ -204,6 +219,17 @@ export default function Home() {
     setRecargo(state.recargo || "");
     setTelefono(state.telefono || "");
   }, []);
+
+  useEffect(() => {
+  const total =
+    toNumber(valor) + (toNumber(valor) * toNumber(recargo)) / 100;
+
+  const anti = toNumber(anticipo);
+
+  if (anti > total) {
+    setAnticipo(String(total));
+  }
+}, [valor, recargo, anticipo]);
 
 const compartir = async (texto: string) => {
   if (navigator.share) {
@@ -228,14 +254,14 @@ useEffect(() => {
   };
 }, []);
 
-useEffect(() => {
-  if (!precioFinal || isNaN(precioFinal)) {
-    setData(null);
-    return;
-  }
+// useEffect(() => {
+//   if (!precioFinal || isNaN(precioFinal)) {
+//     setData(null);
+//     return;
+//   }
 
-  setData(crearPresupuesto(precioFinal));
-}, [precioFinal]);
+//   setData(crearPresupuesto(precioFinal));
+// }, [precioFinal]);
   useEffect(() => {
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker
@@ -326,16 +352,16 @@ useEffect(() => {
   const [copiado, setCopiado] = useState(false);
 const cuotasActual =
   tipoPago === "tarjeta"
-    ? cuotasTarjeta || "-"
-    : cuotasCredito || "-";
+    ? toNumber(cuotasTarjeta) > 0 ? cuotasTarjeta : "-"
+    : toNumber(cuotasCredito) > 0 ? cuotasCredito : "-";
 const operacionValida = () => {
   const monto = toNumber(valor);
 
   if (!monto) return false;
 
-  if (tipoPago === "tarjeta") {
-    if (!cuotasTarjeta) return false;
-  }
+ if (tipoPago === "tarjeta") {
+  if (!toNumber(cuotasTarjeta)) return false;
+}
 
   if (tipoPago === "credito") {
     const cuota = toNumber(valorCuota);
@@ -355,7 +381,7 @@ const deshabilitado = !operacionValida();
     setCuotasTarjeta("");
     setCuotasCredito("");
     setTipoPago("contado");
-    setData(null);
+    // setData(null);
   };
 
   useEffect(() => {
@@ -380,25 +406,26 @@ const deshabilitado = !operacionValida();
     return () => window.removeEventListener("beforeinstallprompt", handler);
   }, []);
 
-  const crearPresupuesto = (valorFC: number): Presupuesto => {
-    const porcentajeRaw = ((0.03 * valorFC) / 200000) * 100 - 100;
+//   const crearPresupuesto = (valorFC: number): Presupuesto => {
+//     const porcentajeRaw = ((0.03 * valorFC) / 200000) * 100 - 100;
 
-    const porcentaje = truncar(
-  Math.min(Math.abs(porcentajeRaw), 100),
-  2
-);
+//     const porcentaje = truncar(
+//   Math.min(Math.abs(porcentajeRaw), 100),
+//   2
+// );
 
-    const formulario200k = Math.max(0, 200000 - (200000 * porcentaje) / 100);
-    const totalFormularios = formulario200k + 18801;
-    const runa = valorFC * 0.008;
+//     const formulario200k = Math.max(0, 200000 - (200000 * porcentaje) / 100);
+//     const totalFormularios = formulario200k + 18801;
+//     const runa = valorFC * 0.008;
 
-    return {
-      porcentaje: String(truncar(porcentaje, 2)),
-      formulario200k: Math.round(formulario200k),
-      totalFormularios: Math.round(totalFormularios),
-      runa: Math.round(runa),
-    };
-  }; 
+//     return {
+//       // porcentaje: String(truncar(porcentaje, 2)),
+//       porcentaje: String(porcentaje),
+//       formulario200k: Math.round(formulario200k),
+//       totalFormularios: Math.round(totalFormularios),
+//       runa: Math.round(runa),
+//     };
+//   }; 
 
   const instalarApp = async () => {
     if (!deferredPrompt) return;
@@ -417,7 +444,6 @@ const deshabilitado = !operacionValida();
   };
 
 const copiarTexto = (data: Presupuesto) => {
-  const { precioFinal, cuotaCalculada } = calcularFinal();
   const valorOriginal = parseFloat(valor) || 0;
   const rec = Number(recargo) || 0;
 
@@ -557,7 +583,7 @@ const enviarWhatsApp = (data: Presupuesto) => {
           max={13000000}
           value={valor}
           onChange={(e) => {
-  const val = sanitizeNumberInput(e.target.value);
+  const val = sanitizeNumber(e.target.value);
   const num = clamp(toNumber(val), 0, 13000000);
   setValor(val === "" ? "" : String(num));
 }}
@@ -610,7 +636,7 @@ const enviarWhatsApp = (data: Presupuesto) => {
   value={descuento}
   max={99}
 onChange={(e) => {
-  const val = sanitizeOptionalNumber(e.target.value);
+  const val = sanitizeNumber(e.target.value);
   if (val === "") return setDescuento("");
   const num = clamp(toNumber(val), 0, 99);
   setDescuento(String(num));
@@ -670,7 +696,7 @@ onChange={(e) => {
     placeholder="Recargo (%)"
     value={recargo}
     onChange={(e) => {
-      const val = sanitizeOptionalNumber(e.target.value);
+      const val = sanitizeNumber(e.target.value);
       if (val === "") return setRecargo("");
       const num = clamp(toNumber(val), 0, 99);
       setRecargo(String(num));
@@ -682,7 +708,7 @@ onChange={(e) => {
   placeholder="Anticipo (opcional)"
   value={anticipo}
   onChange={(e) => {
-    const val = sanitizeOptionalNumber(e.target.value);
+    const val = sanitizeNumber(e.target.value);
 
     const totalConRecargo =
       toNumber(valor) + (toNumber(valor) * toNumber(recargo)) / 100;
@@ -733,7 +759,7 @@ onChange={(e) => {
   placeholder="Valor de cuota"
   value={valorCuota}
   onChange={(e) => {
-    const val = sanitizeOptionalNumber(e.target.value);
+    const val = sanitizeNumber(e.target.value);
 
     const num = clamp(toNumber(val), 0, 99999999);
 
@@ -748,7 +774,7 @@ onChange={(e) => {
     placeholder="Anticipo"
     value={anticipo}
     onChange={(e) => {
-      const val = sanitizeOptionalNumber(e.target.value);
+      const val = sanitizeNumber(e.target.value);
 
       const cuota = toNumber(valorCuota);
       const cant = toNumber(cuotasCredito);
