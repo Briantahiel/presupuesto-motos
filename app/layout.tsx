@@ -37,7 +37,7 @@ export default function RootLayout({
         <meta name="theme-color" content="#0d0761" />
       </head>
 
-      <body className="min-h-full flex flex-col">
+      <body className="relative z-10 min-h-screen flex flex-col bg-[url('/cetrogarbanner.png')] bg-cover bg-center bg-no-repeat" style={{ backgroundImage: `url('/cetrogarbanner.png')` }}>
         {children}
       </body>
     </html>

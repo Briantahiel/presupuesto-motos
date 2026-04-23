@@ -54,19 +54,15 @@ const isValidPhone = (phone: string) => {
 };
 export default function Home() {
   const STORAGE_KEY = "presupuesto_app";
+
   const [valor, setValor] = useState("");
   const [data, setData] = useState<Presupuesto | null>(null);
   const [modelo, setModelo] = useState("");
-  const [tipoPago, setTipoPago] = useState<"contado" | "credito" | "tarjeta">(
-    "contado",
-  );
-  const [tipoCredito, setTipoCredito] = useState<"simple" | "anticipo">(
-    "simple",
-  );
+  const [tipoPago, setTipoPago] = useState<"contado" | "credito" | "tarjeta">("contado");
+  const [tipoCredito, setTipoCredito] = useState<"simple" | "anticipo">("simple");
   const [valorCuota, setValorCuota] = useState("");
   const [anticipo, setAnticipo] = useState("");
   const [descuento, setDescuento] = useState("");
-  // const [cuotas, setCuotas] = useState("");
   const [cuotasTarjeta, setCuotasTarjeta] = useState("");
   const [cuotasCredito, setCuotasCredito] = useState("");
   const [recargo, setRecargo] = useState("");
@@ -76,8 +72,106 @@ export default function Home() {
   const [mostrarInfo, setMostrarInfo] = useState(false);
   const [cuotaAnimada, setCuotaAnimada] = useState(0);
 
+  const truncar = (num: number, decimales: number) => {
+  const factor = Math.pow(10, decimales);
+  return Math.trunc(num * factor) / factor;
+};
+  const calcularFinal = () => {
+  const monto = clamp(toNumber(valor), 0, 13000000);
+  const desc = clamp(toNumber(descuento), 0, 99);
+  const rec = clamp(toNumber(recargo), 0, 99);
+
+  const cuotas =
+    tipoPago === "tarjeta"
+      ? clamp(toNumber(cuotasTarjeta), 0, 24)
+      : clamp(toNumber(cuotasCredito), 0, 24);
+
+  let precioFinal = 0;
+  let cuotaCalculada = 0;
+
+  if (!monto) {
+    return { precioFinal: 0, cuotaCalculada: 0 };
+  }
+
+  /* ================= CONTADO ================= */
+  if (tipoPago === "contado") {
+    precioFinal = monto - (monto * desc) / 100;
+  }
+
+  /* ================= TARJETA ================= */
+  if (tipoPago === "tarjeta") {
+    const totalConRecargo = monto + (monto * rec) / 100;
+
+    const anti = clamp(toNumber(anticipo), 0, totalConRecargo);
+    const financiado = Math.max(0, totalConRecargo - anti);
+
+    cuotaCalculada = cuotas > 0 ? financiado / cuotas : 0;
+    precioFinal = totalConRecargo;
+  }
+
+  /* ================= CRÉDITO ================= */
+  if (tipoPago === "credito") {
+    const cuota = clamp(toNumber(valorCuota), 0, 99999999);
+    const cant = cuotas;
+
+    if (!cuota || !cant) {
+      return { precioFinal: 0, cuotaCalculada: 0 };
+    }
+
+    if (tipoCredito === "simple") {
+      precioFinal = cuota * cant;
+    }
+
+    if (tipoCredito === "anticipo") {
+      const totalCredito = cuota * cant;
+
+      const anti = clamp(toNumber(anticipo), 0, totalCredito);
+
+      precioFinal = totalCredito + anti;
+    }
+
+    cuotaCalculada = cuota;
+  }
+
+  return {
+    precioFinal: Math.round(precioFinal),
+    cuotaCalculada: Math.round(cuotaCalculada),
+  };
+};
+
+  /* ================= CALCULO MEMO ================= */
+  const { precioFinal, cuotaCalculada } = useMemo(() => {
+    return calcularFinal();
+  }, [
+    valor,
+    descuento,
+    recargo,
+    cuotasTarjeta,
+    cuotasCredito,
+    tipoPago,
+    tipoCredito,
+    valorCuota,
+    anticipo,
+  ]);
+
+  /* ================= GUARDAR EN LOCALSTORAGE ================= */
   useEffect(() => {
-  const state = {
+    const state = {
+      valor,
+      modelo,
+      tipoPago,
+      tipoCredito,
+      valorCuota,
+      anticipo,
+      descuento,
+      cuotasTarjeta,
+      cuotasCredito,
+      recargo,
+      telefono,
+    };
+
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  }, [
     valor,
     modelo,
     tipoPago,
@@ -89,40 +183,27 @@ export default function Home() {
     cuotasCredito,
     recargo,
     telefono,
-  };
+  ]);
 
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-}, [
-  valor,
-  modelo,
-  tipoPago,
-  tipoCredito,
-  valorCuota,
-  anticipo,
-  descuento,
-  cuotasTarjeta,
-  cuotasCredito,
-  recargo,
-  telefono,
-]);
-useEffect(() => {
-  const saved = localStorage.getItem(STORAGE_KEY);
-  if (!saved) return;
+  /* ================= CARGAR LOCALSTORAGE ================= */
+  useEffect(() => {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (!saved) return;
 
-  const state = JSON.parse(saved);
+    const state = JSON.parse(saved);
 
-  setValor(state.valor || "");
-  setModelo(state.modelo || "");
-  setTipoPago(state.tipoPago || "contado");
-  setTipoCredito(state.tipoCredito || "simple");
-  setValorCuota(state.valorCuota || "");
-  setAnticipo(state.anticipo || "");
-  setDescuento(state.descuento || "");
-  setCuotasTarjeta(state.cuotasTarjeta || "");
-  setCuotasCredito(state.cuotasCredito || "");
-  setRecargo(state.recargo || "");
-  setTelefono(state.telefono || "");
-}, []);
+    setValor(state.valor || "");
+    setModelo(state.modelo || "");
+    setTipoPago(state.tipoPago || "contado");
+    setTipoCredito(state.tipoCredito || "simple");
+    setValorCuota(state.valorCuota || "");
+    setAnticipo(state.anticipo || "");
+    setDescuento(state.descuento || "");
+    setCuotasTarjeta(state.cuotasTarjeta || "");
+    setCuotasCredito(state.cuotasCredito || "");
+    setRecargo(state.recargo || "");
+    setTelefono(state.telefono || "");
+  }, []);
 
 const compartir = async (texto: string) => {
   if (navigator.share) {
@@ -146,64 +227,7 @@ useEffect(() => {
     window.removeEventListener("offline", update);
   };
 }, []);
-   const calcularFinal = () => {
-  const monto = clamp(toNumber(valor), 0, 13000000);
-  const desc = clamp(toNumber(descuento), 0, 99);
-  const rec = clamp(toNumber(recargo), 0, 99); // 👈 CORREGIDO
-  const cuotas =
-    tipoPago === "tarjeta"
-      ? clamp(toNumber(cuotasTarjeta), 0, 24)
-      : clamp(toNumber(cuotasCredito), 0, 24);
 
-  const anti = clamp(toNumber(anticipo), 0, monto);
-
-  let precioFinal = 0;
-  let cuotaCalculada = 0;
-
-  if (!monto) {
-    return { precioFinal: 0, cuotaCalculada: 0 };
-  }
-
-  if (tipoPago === "contado") {
-    precioFinal = monto - (monto * desc) / 100;
-  }
-
- if (tipoPago === "tarjeta") {
-  const totalConRecargo = monto + (monto * rec) / 100;
-
-  const antiTarjeta = clamp(toNumber(anticipo), 0, totalConRecargo);
-
-  const montoFinanciado = Math.max(0, totalConRecargo - antiTarjeta);
-
-  cuotaCalculada = cuotas > 0 ? montoFinanciado / cuotas : 0;
-  precioFinal = totalConRecargo;
-}
-
-  if (tipoPago === "credito") {
-    const cuota = clamp(toNumber(valorCuota), 0, 99999999);
-    const cant = cuotas;
-
-    if (!cuota || !cant) {
-      return { precioFinal: 0, cuotaCalculada: 0 };
-    }
-
-    if (tipoCredito === "simple") {
-      precioFinal = cuota * cant;
-    }
-
-    if (tipoCredito === "anticipo") {
-  const antiCredito = Math.max(0, toNumber(anticipo));
-precioFinal = cuota * cant + antiCredito;
-}
-    cuotaCalculada = cuota;
-  }
-
-  return {
-    precioFinal: Math.round(precioFinal),
-    cuotaCalculada: Math.round(cuotaCalculada),
-  };
-};
-  const { precioFinal, cuotaCalculada } = calcularFinal();
 useEffect(() => {
   if (!precioFinal || isNaN(precioFinal)) {
     setData(null);
@@ -304,13 +328,25 @@ const cuotasActual =
   tipoPago === "tarjeta"
     ? cuotasTarjeta || "-"
     : cuotasCredito || "-";
+const operacionValida = () => {
+  const monto = toNumber(valor);
 
-const deshabilitado =
-  !valor ||
-  (tipoPago === "tarjeta" && !cuotasTarjeta) ||
-  (tipoPago === "credito" &&
-    (!cuotasCredito || !valorCuota));
+  if (!monto) return false;
 
+  if (tipoPago === "tarjeta") {
+    if (!cuotasTarjeta) return false;
+  }
+
+  if (tipoPago === "credito") {
+    const cuota = toNumber(valorCuota);
+    const cuotas = toNumber(cuotasCredito);
+
+    if (!cuota || !cuotas) return false;
+  }
+
+  return true;
+};
+const deshabilitado = !operacionValida();
   const format = (num: number) => num.toLocaleString("es-AR");
   const resetear = () => {
     setValor("");
@@ -331,26 +367,7 @@ const deshabilitado =
       setInstalable(false);
     }
   }, []);
-  useEffect(() => {
-    const { precioFinal } = calcularFinal();
 
-    if (!precioFinal || isNaN(precioFinal)) {
-      setData(null);
-      return;
-    }
-
-    setData(crearPresupuesto(precioFinal));
-  }, [
-    valor,
-    descuento,
-    recargo,
-    tipoPago,
-    cuotasTarjeta,
-    cuotasCredito,
-    valorCuota,
-    anticipo,
-    tipoCredito,
-  ]);
   useEffect(() => {
     const handler = (e: any) => {
       e.preventDefault();
@@ -366,14 +383,17 @@ const deshabilitado =
   const crearPresupuesto = (valorFC: number): Presupuesto => {
     const porcentajeRaw = ((0.03 * valorFC) / 200000) * 100 - 100;
 
-    const porcentaje = Math.min(Math.abs(porcentajeRaw), 100);
+    const porcentaje = truncar(
+  Math.min(Math.abs(porcentajeRaw), 100),
+  2
+);
 
     const formulario200k = Math.max(0, 200000 - (200000 * porcentaje) / 100);
     const totalFormularios = formulario200k + 18801;
     const runa = valorFC * 0.008;
 
     return {
-      porcentaje: porcentaje.toFixed(2),
+      porcentaje: String(truncar(porcentaje, 2)),
       formulario200k: Math.round(formulario200k),
       totalFormularios: Math.round(totalFormularios),
       runa: Math.round(runa),
@@ -414,24 +434,19 @@ const copiarTexto = (data: Presupuesto) => {
 ${modelo ? `🏁 Modelo: ${modelo}\n` : ""}
 
 💰 Precio de lista: $${format(valorOriginal)}
-
 ${
   tipoPago === "contado"
     ? ahorro > 0
       ? `🟢 PROMO CONTADO
-
 💵 Precio final: $${format(precioFinal)}
 🎯 Ahorrás: $${format(ahorro)} (${descuento}% OFF)
-
 `
       : `💵 Precio final: $${format(precioFinal)}
-
 `
     : ""}
 ${
   tipoPago === "tarjeta"
     ? `🔵 FINANCIACIÓN CON TARJETA
-
 ${
   parseFloat(anticipo) > 0
     ? `💵 Entrega inicial: $${format(parseFloat(anticipo))}\n`
@@ -440,20 +455,17 @@ ${
 ${rec > 0 ? `(${rec}% de recargo incluido)` : "sin interés"}
 
 💰 Total final: $${format(precioFinal)}
-
 `
     : ""}
 ${
   tipoPago === "credito"
     ? `🟣 CRÉDITO PERSONAL
-
 📊 ${cuotasActual} cuotas de $${format(cuotaCalculada)}
 ${
   tipoCredito === "anticipo" && parseFloat(anticipo) > 0
     ? `💵 Entrega inicial: $${format(parseFloat(anticipo))}\n`
     : ""
 }💰 Total financiado: $${format(precioFinal)}
-
 `
     : ""}
 📄 Patentamiento estimado: $${format(data.totalFormularios)}
@@ -501,7 +513,7 @@ const enviarWhatsApp = (data: Presupuesto) => {
 
   if (loading) {
     return (
-      <div className="fixed inset-0 flex items-center justify-center bg-[#0B1320] text-white">
+      <div className="fixed inset-0 flex items-center justify-center bg-[url('/cetrogarbanner.png')] bg-cover bg-center bg-no-repeat text-white">
         <div className="text-center">
           <p className="text-2xl font-bold text-orange-500">Cetrogar</p>
           <p className="text-sm opacity-70">Motos</p>
@@ -517,9 +529,9 @@ const enviarWhatsApp = (data: Presupuesto) => {
   </div>
 )}
 
-      <div className="bg-white/90 backdrop-blur p-6 rounded-3xl shadow-xl w-90 space-y-6 border border-gray-200">
-        <h1 className="text-center text-md text-gray-800">
-    Simulador de compra y financiación
+      <div className="bg-white/120 backdrop-blur p-6 rounded-3xl shadow-xl w-90 space-y-6 border border-gray-300">
+        <h1 className="text-center text-sm text-gray-200 bg-gradient-to-r from-blue-600 to-indigo-900 px-4 py-2 rounded-xl">
+    Cotización y patentamiento de motos
         </h1>
         <div className="flex items-center mt-4">
           <div className="flex-1 h-[1px] bg-gradient-to-r from-transparent to-gray-300" />
@@ -652,35 +664,36 @@ onChange={(e) => {
       : "max-h-0 opacity-0 pointer-events-none"
   }`}
 >
+    {/* RECARGO */}
   <input
     type="number"
     placeholder="Recargo (%)"
     value={recargo}
     onChange={(e) => {
-  const val = sanitizeOptionalNumber(e.target.value);
-  if (val === "") return setRecargo("");
-  const num = clamp(toNumber(val), 0, 99);
-  setRecargo(String(num));
-}}
+      const val = sanitizeOptionalNumber(e.target.value);
+      if (val === "") return setRecargo("");
+      const num = clamp(toNumber(val), 0, 99);
+      setRecargo(String(num));
+    }}
     className="w-full px-4 py-3 mt-4 rounded-xl border"
   />
+<input
+  type="number"
+  placeholder="Anticipo (opcional)"
+  value={anticipo}
+  onChange={(e) => {
+    const val = sanitizeOptionalNumber(e.target.value);
 
-  <input
-    type="number"
-    placeholder="Anticipo (opcional)"
-    value={anticipo}
-onChange={(e) => {
-  const val = sanitizeOptionalNumber(e.target.value);
+    const totalConRecargo =
+      toNumber(valor) + (toNumber(valor) * toNumber(recargo)) / 100;
 
-  const totalConRecargo =
-    toNumber(valor) + (toNumber(valor) * toNumber(recargo)) / 100;
+    const num = clamp(toNumber(val), 0, totalConRecargo);
 
-  const num = clamp(toNumber(val), 0, totalConRecargo);
+    setAnticipo(val === "" ? "" : String(num));
+  }}
+  className="w-full px-4 py-3 mt-2 rounded-xl border"
+/>
 
-  setAnticipo(val === "" ? "" : String(num));
-}}
-    className="w-full px-4 py-3 mt-2 rounded-xl border"
-  />
 </div>
         </div>
         {/* CREDITO PERSONAL */}
@@ -729,26 +742,26 @@ onChange={(e) => {
 
             className="w-full px-4 py-3 mt-2 rounded-xl border"
           />
+{tipoCredito === "anticipo" && (
+  <input
+    type="number"
+    placeholder="Anticipo"
+    value={anticipo}
+    onChange={(e) => {
+      const val = sanitizeOptionalNumber(e.target.value);
 
-          {tipoCredito === "anticipo" && (
-            <input
-              type="number"
-              placeholder="Anticipo"
-              value={anticipo}
- onChange={(e) => {
-  const val = sanitizeOptionalNumber(e.target.value);
+      const cuota = toNumber(valorCuota);
+      const cant = toNumber(cuotasCredito);
+      const totalCredito = cuota * cant;
 
-  const cuota = toNumber(valorCuota);
-  const cant = toNumber(cuotasCredito);
-  const totalCredito = cuota * cant;
+      const num = clamp(toNumber(val), 0, totalCredito);
 
-  const num = clamp(toNumber(val), 0, totalCredito);
+      setAnticipo(val === "" ? "" : String(num));
+    }}
+    className="w-full px-4 py-3 mt-2 rounded-xl border"
+  />
+)}
 
-  setAnticipo(val === "" ? "" : String(num));
-}}
-              className="w-full px-4 py-3 mt-2 rounded-xl border"
-            />
-          )}
         </div>
 
         {data && (
@@ -889,10 +902,15 @@ onChange={(e) => {
     </div>
   </div>
 )}
-            <p className="flex items-center gap-2">
-              <Percent size={16} />
-              Aplicado: <strong>{data.porcentaje}%</strong>
-            </p>
+            <div className="flex items-center justify-between bg-blue-50 border border-blue-200 rounded-xl p-3">
+  <div className="flex items-center gap-2 text-blue-700">
+    <Percent size={16} />
+    <span className="text-sm">Desc. Formulario</span>
+  </div>
+  <span className="font-bold text-blue-900">
+    {data.porcentaje}%
+  </span>
+</div>
 
             <p className="flex items-center gap-2">
               <FileText size={16} /> Formularios:{" "}
