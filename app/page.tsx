@@ -946,16 +946,22 @@ onChange={(e) => {
             <p className="flex items-center gap-2">
               <Landmark size={16} /> RUNA: <strong>${format(data.runa)}</strong>
             </p>
-            <input
-              type="tel"
-              placeholder="Ej: 11 1234 5678"
-              value={telefono ? `+54 ${telefono}` : ""}
-              onChange={(e) => {
-  const limpio = sanitizePhone(e.target.value);
-  setTelefono(limpio);
-}}
-              className="w-full px-4 py-3 rounded-xl bg-gradient-to-b from-white to-gray-50 border border-gray-200 shadow-sm text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
-            />
+            <div className="flex">
+  <span className="px-3 py-3 bg-gray-200 rounded-l-xl text-sm">
+    +54
+  </span>
+
+  <input
+    type="tel"
+    placeholder="11 1234 5678"
+    value={telefono}
+    onChange={(e) => {
+      const limpio = sanitizePhone(e.target.value);
+      setTelefono(limpio);
+    }}
+    className="w-full px-4 py-3 rounded-r-xl border"
+  />
+</div>
             <button
               onClick={() => {
                 if (!deshabilitado && data) {
@@ -1002,7 +1008,7 @@ onChange={(e) => {
                 <p>Impuesto Sellos Motos: $200.000</p>
                 <p>Gastos administrativos tdM: $1.800</p>
                 <p>Inscr CC Motov Grav RUNA: $17.000</p>
-                <p>Placa metálica: $1</p>
+                <p>Placa metálica: $1.00</p>
                 <p className="mt-2 text-gray-500">
                   Valores sujetos a cambios sin previo aviso
                 </p>
