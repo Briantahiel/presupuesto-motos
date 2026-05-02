@@ -1,10 +1,9 @@
 @import "tailwindcss";
 
 :root {
-  /* --background: #ffffff; */
+  color-scheme: light;
   --foreground: #171717;
 }
-
 @keyframes fadeUp {
   from {
     opacity: 0;
