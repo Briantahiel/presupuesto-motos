@@ -36,10 +36,25 @@ export default function RootLayout({
         <link rel="manifest" href="/manifest.json" />
         <meta name="theme-color" content="#0d0761" />
       </head>
-
-      <body className="relative z-10 min-h-screen flex flex-col bg-[url('/cetrogarbanner.png')] bg-cover bg-center bg-no-repeat" style={{ backgroundImage: `url('/cetrogarbanner.png')` }}>
-        {children}
-      </body>
+<body
+  className="relative z-10 min-h-screen flex flex-col bg-[url('/cetrogarbanner.png')] bg-cover bg-center bg-no-repeat"
+  suppressHydrationWarning
+>
+  <script
+    dangerouslySetInnerHTML={{
+      __html: `
+        (function() {
+          const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+          if (isDark) {
+            document.documentElement.classList.add('dark');
+          }
+        })();
+      `,
+    }}
+  />
+  {children}
+</body>
+      
     </html>
   );
 }
