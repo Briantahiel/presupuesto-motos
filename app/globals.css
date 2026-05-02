@@ -1,7 +1,24 @@
 @import "tailwindcss";
 @media (prefers-color-scheme: dark) {
-  html {
-    class: dark;
+
+  input:not([type="checkbox"]):not([type="radio"]),
+  textarea,
+  select {
+    background-color: #1f2937 !important;
+    color: #ffffff !important;
+    border-color: #4b5563 !important;
+  }
+
+  input::placeholder,
+  textarea::placeholder {
+    color: #9ca3af !important;
+  }
+
+  input:focus,
+  textarea:focus,
+  select:focus {
+    outline: none !important;
+    box-shadow: 0 0 0 2px #3b82f6 !important;
   }
 }
 :root {
@@ -74,29 +91,4 @@ button {
 
 button:active {
   transform: scale(0.96);
-}
-
-/* INPUTS */
-.dark :where(input:not([type="checkbox"]):not([type="radio"])) {
-  background-color: #1f2937 !important;
-  color: #ffffff !important;
-  border-color: #4b5563 !important;
-}
-
-/* SELECT Y TEXTAREA */
-.dark :where(select, textarea) {
-  background-color: #1f2937 !important;
-  color: #ffffff !important;
-  border-color: #4b5563 !important;
-}
-
-/* PLACEHOLDER */
-.dark :where(input, textarea)::placeholder {
-  color: #9ca3af !important;
-}
-
-/* FOCUS */
-.dark :where(input, select, textarea):focus {
-  outline: none !important;
-  box-shadow: 0 0 0 2px #3b82f6 !important;
 }
