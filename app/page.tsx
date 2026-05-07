@@ -537,6 +537,44 @@ const enviarWhatsApp = (data: Presupuesto) => {
   window.open(url, "_blank");
 };
 
+  const bloqueado = true;
+
+  if (bloqueado) {
+    return (
+      <div className="min-h-screen bg-[#f3f4f6] flex items-center justify-center p-6">
+        <div className="bg-white border border-gray-300 shadow-xl rounded-2xl p-8 max-w-lg w-full">
+
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
+              🚫
+            </div>
+
+            <div>
+              <h1 className="font-bold text-gray-800">
+                Access Blocked
+              </h1>
+
+              <p className="text-xs text-gray-500">
+                Corporate Security Gateway
+              </p>
+            </div>
+          </div>
+
+          <div className="bg-gray-100 rounded-xl p-4 text-sm text-gray-700 leading-relaxed">
+            This application has been restricted by the organization policy.
+            <br />
+            <br />
+              Reason: unauthorized internal deployment 😉.
+          </div>
+
+          <div className="mt-4 text-xs text-gray-400 font-mono">
+            ERR_NETWORK_POLICY_017
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (loading) {
     return (
       <div className="fixed inset-0 flex items-center justify-center bg-[url('/cetrogarbanner.png')] bg-cover bg-center bg-no-repeat text-white">
